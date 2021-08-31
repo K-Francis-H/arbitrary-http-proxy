@@ -30,6 +30,7 @@ httpServer.listen(8001); //80
 //TODO setup an http version for testing ease
 
 app.use(function(req, res, next){
+	console.log('USE LOG');
 	console.log(req.url);
 	next();
 });
@@ -45,19 +46,37 @@ app.use(sessions({
 }));
 var session;
 
+//check session
+app.use( (req, res, next) => {
+	console.log('CHECK SESSION');
+	console.log(req.url);
+	if( (!req.session || !req.session.session_id) && !isResource(req.url)){
+		console.log('NO SESSION, sending login page');
+		res.sendFile('/login.html', FILE_OPT);
+	}else{
+		next();
+	}
+
+});
+
+function isResource(url){
+	return url.indexOf('/style/') > -1 || url.indexOf('/js/') > -1 || url.indexOf('/images/') > -1 || url.indexOf('/login') > -1 || url.indexOf('/register') > -1;
+}
+
+app.use(express.static('site'));
 
 app.get('/', (req, res) => {
 	//user from remote device connecting to landing page
 	//req.session.destroy();
-	session = req.session;
-	let file = '/login.html';
-	console.log(session);
-	if(session && session.userid){
+	//session = req.session;
+	//let file = '/login.html';
+	//console.log(session);
+	//if(session && session.user_id){
 		file = '/index.html';
-	}
+	//}
 	res.sendFile(file, FILE_OPT);
 });
-
+/*
 app.post('/user', (req, res) => {
 	if(req.body.username == 'a' && req.body.password == 'b'){
 		pool.getConnection( (err, conn) => {
@@ -76,6 +95,23 @@ app.post('/user', (req, res) => {
 		res.send('Invalid');
 	}
 });
+*/
+app.post('/login', (req, res) => {
+	db.login(req.body.username, req.body.password, function(sessionId){
+		if(!sessionId){
+			//leave
+			console.log('bad login');
+			//res.redirect('/login.html?result=false');
+			res.sendFile('/login.html?result=false', FILE_OPT);
+		}else{
+			console.log('good login');
+			req.session.session_id = sessionId;			
+			//cool allow them into the dashboard and setup the session
+			//res.redirect('/dashboard');
+			res.send({'status':true});
+		}
+	});
+});
 
 app.get('/logout', (req, res) => {
 	delete session;
@@ -83,8 +119,28 @@ app.get('/logout', (req, res) => {
 	res.redirect('/'); 
 });
 
+app.post('/register', (req, res) => {
+	let email = req.body.username;
+	let pass = req.body.password;
+	let conf = req.body['confirm-password'];
+	if(!passwordStrength(pass) || (pass !== conf)){
+		res.send(JSON.stringify({'error':'bad or non-matching password'}));
+	}else{
+		db.register(email, pass, function(result){
+			if(result){
+				//registered
+				console.log('registration success! welcome '+email);
+			}else{
+				console.log('registration failed... sorry '+email);
+			}
+		});
+	}
+});
+
+
 app.get("*.html$|*.css$|*.js$|/images/*|/fonts/*$", function(req, res){
 	//oh fuck
+	console.log('get: '+req.url);
 	console.log(url.parse(req.url).pathname.substring(1));
 	res.sendFile(url.parse(req.url).pathname.substring(1), FILE_OPT);
 });
@@ -97,8 +153,9 @@ app.get('/service-ping/:serviceId', (req, res) => {
 
 //TODO other endpoints for navigating dashboard, connecting to LAN services
 
-app.post('/dashboard/login', (req, res) => {
-	
+app.get('/dashboard', (req, res) => {
+	//TODO
+	res.sendFile('dashboard.html');
 });
 
 app.get('/dashboard/:userId/:token', (req, res) => {
@@ -125,4 +182,7 @@ app.post('/connect/:serviceId/:path', (req, res) => {
 	//pass through ssh tunnel the user request, display response
 });
 
+function passwordStrength(pass){
+	return pass.length >= 8; //yeah i know, needs some improvement
+}
 

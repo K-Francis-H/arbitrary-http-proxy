@@ -2,18 +2,122 @@
 <html>
 <head>
 	<meta charset='utf-8'/>
-    <link rel="stylesheet" href="main.css">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    	<link type="text/css" rel="stylesheet" href="style/main.css">
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script>
+		/*document.addEventListener('DOMContentLoaded', function(){
+			document.getElementById('register').onclick = function(){
+				document.getElementById('title').innerText = 'Register';
+				document.getElementById('
+			};
+		});*/
+		$(document).ready(function(){
+			var toggleRegister = true;
+			var action = '/login';
+			$('#register').on('click', function(){
+				if(toggleRegister){
+					$('#title').text('Register');
+					$('#confirm-password-container').show();
+					$(this).text('Already Have an Account?');
+					//$('form').prop('action', '/register');
+					action = '/register';
+				}else{
+					$('#title').text('Login');
+					$('#confirm-password-container').hide();
+					$(this).text('Create an Account');
+					action = '/login';
+					//$('form').prop('action', '/login');
+				}
+				toggleRegister = !toggleRegister;
+			});
+
+			/*$('form').submit(function(){
+				//opposite here cause its out of sync with the above toggle
+				if(!toggleRegister){
+					return registerValidate();
+				}else{
+					return loginValidate();
+				}	
+			});*/
+
+			function registerValidate(){
+				console.log('validate register');
+				let email = $('#username').val();
+				let pass = $('#password').val();
+				let conf = $('#confirm-password').val();
+
+				return (pass === conf) && (email.length > 0) && (pass.length > 0) && (conf.length > 0);
+			}
+
+			function loginValidate(){
+				console.log('validate login');
+				let email = $('#username').val();
+				let pass = $('#password').val();
+
+				return (email.length > 0) && (pass.length > 0);
+			}
+
+			function validate(){
+				if(!toggleRegister){
+					return registerValidate();
+				}else{
+					return loginValidate();
+				}
+			}
+
+			function submit(){
+				//TODO $.post instead of a form
+				let email = $('#username').val();
+				let pass = $('#password').val();
+				let conf = $('#confirm-password').val();
+
+				$.post({url: action,
+					data: {
+						username : email,
+						password : pass,
+						'confirm-password' : conf
+					},
+					success: function(){
+						console.log('SUCCESS');
+					},
+					error: function(){
+						console.log('ERROR');
+					}
+				});
+			}
+
+			$('#submit').on('click', function(){
+				if(validate()){
+					//good now post to appropriate place
+					submit();
+				}else{
+					console.log('invalid register or login');
+				}
+				
+			});
+		});
+	</script>
 </head>
 <body>
-    <form action="/user" method="post">
-        <h2>Login</h2>
-        <div class="input-field">
-            <input type="text" name="username" id="username" placeholder="Enter Username">
-        </div>
-        <div class="input-field">
-            <input type="password" name="password" id="password" placeholder="Enter Password">
-        </div>
-        <input type="submit" value="LogIn">
-    </form>
+	<!--<form action="/login" method="post">-->
+	<div class='form'>
+		<h2 id="title">Login</h2>
+		<div class="input-field">
+			<input type="text" name="username" id="username" placeholder="Enter Username or Email">
+		</div>
+		<div class="input-field">
+			<input type="password" name="password" id="password" placeholder="Enter Password">
+		</div>
+		<div id="confirm-password-container" class="input-field" style="display:none;">
+			<input type="password" name="confirm-password" id="confirm-password" placeholder="Confirm Password">
+		</div>
+		<input id="submit" class="form input-field" type="submit" value="Submit">
+		<a id='register' href='#' style="margin-top:15px; margin-left:auto; margin-right:auto">Create an Account</a>
+	</div>
+	<!--</form>-->
+	
 </body>
 </html>
