@@ -108,7 +108,10 @@ app.post('/login', (req, res) => {
 			req.session.session_id = sessionId;			
 			//cool allow them into the dashboard and setup the session
 			//res.redirect('/dashboard');
-			res.send({'status':true});
+			res.send({
+				'status':true
+				//TODO session id or something, so that they can navigate where they want 
+			});
 		}
 	});
 });

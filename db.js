@@ -91,6 +91,22 @@ module.exports = function(pool){
 			});
 		},
 
+		checkSession: function(sessionId, cb){
+			pool.getConnection( (err, conn) => {
+				if(err) throw err;
+				conn.query('SELECT * FROM user_session WHERE session_id=?', [sessionId], (err, rows) => {
+					if(err) throw err;
+					if(rows.length == 0){
+
+					}else{
+						//check session expiration
+
+						//delete expired sessions... use sql to do both
+					}
+				});
+			});
+		},
+
 		//the other parts of the user table can be filled out at the user's leisure
 		register : function(email, password, cb){
 			pool.getConnection( (err, conn) => {

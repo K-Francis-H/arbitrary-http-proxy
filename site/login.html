@@ -24,12 +24,14 @@
 					$(this).text('Already Have an Account?');
 					//$('form').prop('action', '/register');
 					action = '/register';
+					$('#help').hide();
 				}else{
 					$('#title').text('Login');
 					$('#confirm-password-container').hide();
 					$(this).text('Create an Account');
 					action = '/login';
 					//$('form').prop('action', '/login');
+					$('#help').show();
 				}
 				toggleRegister = !toggleRegister;
 			});
@@ -80,10 +82,12 @@
 						password : pass,
 						'confirm-password' : conf
 					},
-					success: function(){
+					success: function(result){
 						console.log('SUCCESS');
+						console.log(result);
+						//window.open('/dashboard
 					},
-					error: function(){
+					error: function(err){
 						console.log('ERROR');
 					}
 				});
@@ -97,6 +101,12 @@
 					console.log('invalid register or login');
 				}
 				
+			});
+
+			$('#help').on('click', function(){
+				//TODO do something
+				//action = '/login-help';
+				//hide password field
 			});
 		});
 	</script>
@@ -115,7 +125,8 @@
 			<input type="password" name="confirm-password" id="confirm-password" placeholder="Confirm Password">
 		</div>
 		<input id="submit" class="form input-field" type="submit" value="Submit">
-		<a id='register' href='#' style="margin-top:15px; margin-left:auto; margin-right:auto">Create an Account</a>
+		<a id='register' style="margin-top:15px; margin-left:auto; margin-right:auto">Create an Account</a>
+		<a id='help' style="margin-top:15px; margin-left:auto; margin-right:auto">Forgot Password</a>
 	</div>
 	<!--</form>-->
 	
