@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1'>
+		<!--<link type="text/css" rel="stylesheet" href="style/main.css">-->
+		<!--<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css' rel='stylesheet'>-->
+		<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">-->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+                <link href='https://use.fontawesome.com/releases/v5.7.2/css/all.css' rel='stylesheet'>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+		<style>
+			.add-new-btn{
+				float:right;
+				margin-left:10px;
+				margin-right:10px;
+				display:none;
+			}
+			.show{
+				display:block;
+			}
+		</style>
+		<script>
+			$(document).ready(function(){
+				//hide all tables
+				$('.tab-table').hide();
+				//show active tab table
+				let tableId = $('.nav-tabs li').find('.active').parent().attr('data-table');
+				console.log(tableId);
+				$(tableId).show();
+
+				$('.nav-tabs li').on('click', function(){
+					//remove active from all set on clicked
+					$('.nav-tabs li').find('.active').removeClass('active');
+					//set clicked tab active
+					$(this).find('a').addClass('active');
+
+					//make corresponding table visible
+					$('.tab-table').hide();
+					$($(this).attr('data-table')).show();
+					
+					//make corresponding button visible
+					$('#add-btns button').removeClass('show');
+					console.log($(this).attr('data-button'));
+					$($(this).attr('data-button')).addClass('show');
+				});
+
+				//control buttons
+
+				//fetch table data
+					//fill "*-table-rows" content
+			});
+		</script>
+	</head>
+	<body>
+		<div class="row">
+			<div class="col">
+				<ul class="nav nav-tabs">
+					  <li data-button="#new-device" data-table="#device-table-view" class="nav-item" ><a class="nav-link active" href="#">Devices</a></li>
+					  <li data-button="#new-service" data-table="#service-table-view" class="nav-item" ><a class="nav-link" href="#">Services</a></li>
+
+				</ul>
+			</div>
+			<div id="add-btns" class="col">
+				<button id="new-device" class="btn btn-success add-new-btn show" data-toggle="modal" data-target="#new-device-modal">New Device</button>
+				<button id="new-service" class="btn btn-success add-new-btn" data-toggle="modal" data-target="#new-service-modal">New Service</button>
+			</div>
+		</div>
+		<div id="device-table-view" class="tab-table">
+			<table class="table table-dark table-striped">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Device Name</th>
+						<th>Client Software Version</th>
+						<th># of Services</th>
+						<th>Status</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody id="device-table-rows">
+
+				</tbody>
+			</table>
+		</div>
+		<div id="service-table-view" class="tab-table">
+			<table class="table table-dark table-striped">
+				<thead>
+					<tr>
+						<th>Service Name</th>
+						<th>Protocol</th>
+						<th>Path</th>
+						<th>Port</th>
+						<th>Status</th><!--get this from the client-->
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+
+				</tbody>
+			</table>
+		</div>
+		<!--modals-->
+		<div class="modal" id="new-device-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Add New Device</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						//TODO add form for creating new device, or just onetimecode
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="modal" id="new-service-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Add New Device</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						//TODO add form for creating new service
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--TODO actions toggles for list items to delete, edit, etc-->
+	</body>
+</html>
