@@ -8,6 +8,8 @@ const fs = require('fs');
 const url = require("url");
 const mysql = require('mysql');
 const uuid = require('uuid');
+const yargs = require('yargs');
+
 
 const dbCreds = fs.readFileSync('mysql_user.cred', 'utf8').split('\n');
 const pool = mysql.createPool({//Connection({
@@ -19,6 +21,18 @@ const pool = mysql.createPool({//Connection({
 });
 
 const db = require('./db.js')(pool);
+
+const argv = yargs
+	.command('debug', 'Set the server to a debug mode which does not validate sessions for easier testing')
+	.help()
+	.alias('help', 'h')
+	.argv;
+
+const DEBUG = argv.debug;
+if(DEBUG){
+	console.log('DEBUG MODE');
+}
+
 
 const FILE_OPT = {root:'site'};
 
@@ -39,7 +53,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended : true }));
 app.use(cookieParser());
 app.use(sessions({
-	secret : uuid.v4(),
+	secret : 'Secret TODO',//uuid.v4(),
 	saveUninitialized : true,
 	cookie : { maxAge : 1000 * 10 },
 	resave : false
@@ -48,15 +62,18 @@ var session;
 
 //check session
 app.use( (req, res, next) => {
-	console.log('CHECK SESSION');
-	console.log(req.url);
-	if( (!req.session || !req.session.session_id) && !isResource(req.url)){
-		console.log('NO SESSION, sending login page');
-		res.sendFile('/login.html', FILE_OPT);
-	}else{
+	if(DEBUG){
 		next();
+	}else{
+		console.log('CHECK SESSION');
+		console.log(req.url);
+		if( (!req.session || !req.session.session_id) && !isResource(req.url)){
+			console.log('NO SESSION, sending login page');
+			res.sendFile('/login.html', FILE_OPT);
+		}else{
+			next();
+		}
 	}
-
 });
 
 function isResource(url){
@@ -97,19 +114,23 @@ app.post('/user', (req, res) => {
 });
 */
 app.post('/login', (req, res) => {
-	db.login(req.body.username, req.body.password, function(sessionId){
+	db.login(req.body.username, req.body.password, function(sessionId, userId){
 		if(!sessionId){
 			//leave
 			console.log('bad login');
 			//res.redirect('/login.html?result=false');
-			res.sendFile('/login.html?result=false', FILE_OPT);
+			res.send({
+				'status': false
+			});//File('/login.html?result=false', FILE_OPT);
 		}else{
 			console.log('good login');
-			req.session.session_id = sessionId;			
+			req.session.session_id = sessionId;
+			req.session.user_id = userId;			
 			//cool allow them into the dashboard and setup the session
 			//res.redirect('/dashboard');
 			res.send({
-				'status':true
+				'status':true,
+				'goto': '/dashboard/'+userId
 				//TODO session id or something, so that they can navigate where they want 
 			});
 		}
@@ -161,8 +182,15 @@ app.get('/dashboard', (req, res) => {
 	res.sendFile('dashboard.html');
 });
 
-app.get('/dashboard/:userId/:token', (req, res) => {
+app.get('/dashboard/:userId', (req, res) => {
+	res.sendFile('dashboard.html', FILE_OPT);
+});
 
+app.get('/dashboard/data/:userId', (req, res) => {
+	//TODO security issue: check that req.session.userId = the parameter user id and exit if not
+	db.getAllWhere('device', {user_id: req.params.userId}, function(result){
+		res.send(result);
+	});
 });
 
 app.post('/register-service', (req, res) => {
@@ -185,7 +213,12 @@ app.post('/connect/:serviceId/:path', (req, res) => {
 	//pass through ssh tunnel the user request, display response
 });
 
+app.get('/confirm-email/:confId', (req, res) => {
+	//TODO look it up, if good return it
+});
+
 function passwordStrength(pass){
-	return pass.length >= 8; //yeah i know, needs some improvement
+	return true;
+	//return pass.length >= 8; //yeah i know, needs some improvement
 }
 

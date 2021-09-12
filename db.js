@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const uuid = require('uuid');
 
+const email = require('./email.js');
+
 
 module.exports = function(pool){
 	return {
@@ -78,7 +80,7 @@ module.exports = function(pool){
 							if(result.affectedRows > 0){
 								//we good
 								conn.release();
-								cb(session_id);
+								cb(session_id, user_id);
 							}else{
 								return cleanup(conn, cb);
 							}
@@ -125,6 +127,8 @@ module.exports = function(pool){
 					if(err) throw err;
 					if(result.affectedRows > 0){
 						cb(true);
+						//TODO first add entry to email confirmation table
+						email.sendEmailConfirmation(email, uuid.v4());
 					}else{
 						console.log(result.message);
 						cb(false);

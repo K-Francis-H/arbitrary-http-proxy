@@ -2,11 +2,13 @@
 <html>
 <head>
 	<meta charset='utf-8'/>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
-    	<link type="text/css" rel="stylesheet" href="style/main.css">
-
+	<title>Fog Login</title>
+    	<!--<link type="text/css" rel="stylesheet" href="style/main.css">-->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <link href='https://use.fontawesome.com/releases/v5.7.2/css/all.css' rel='stylesheet'>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 	<script>
 		/*document.addEventListener('DOMContentLoaded', function(){
 			document.getElementById('register').onclick = function(){
@@ -86,6 +88,20 @@
 						console.log('SUCCESS');
 						console.log(result);
 						//window.open('/dashboard
+						//try{
+						//	let j = JSON.parse(result);
+						if(result.status){
+							window.open(result.goto, '_self');
+						}else{
+							//clear inputs show error message
+							$('#invalid-login').show();
+							setTimeout(function(){
+								$('#invalid-login').hide();
+							}, 3000);
+						}
+						//}catch(err){
+						//	console.log(err);
+						//}
 					},
 					error: function(err){
 						console.log('ERROR');
@@ -113,21 +129,34 @@
 </head>
 <body>
 	<!--<form action="/login" method="post">-->
-	<div class='form'>
-		<h2 id="title">Login</h2>
-		<div class="input-field">
-			<input type="text" name="username" id="username" placeholder="Enter Username or Email">
+	<div class="row">
+		<div id="invalid-login" class="alert alert-danger container-fluid col-lg-12" style="display:none; margin:auto;">
+			<strong>Invalid E-mail or Password!</strong>
 		</div>
-		<div class="input-field">
-			<input type="password" name="password" id="password" placeholder="Enter Password">
-		</div>
-		<div id="confirm-password-container" class="input-field" style="display:none;">
-			<input type="password" name="confirm-password" id="confirm-password" placeholder="Confirm Password">
-		</div>
-		<input id="submit" class="form input-field" type="submit" value="Submit">
-		<a id='register' style="margin-top:15px; margin-left:auto; margin-right:auto">Create an Account</a>
-		<a id='help' style="margin-top:15px; margin-left:auto; margin-right:auto">Forgot Password</a>
 	</div>
+	<div class="container col-xl-2">
+		<h2 id="title" class="text-center">Login</h2>
+		<div class="form-group">
+			<input class="form-control" type="text" name="username" id="username" placeholder="Enter Username or Email">
+		</div>
+		<div class="form-group">
+			<input class="form-control" type="password" name="password" id="password" placeholder="Enter Password">
+		</div>
+		<div id="confirm-password-container" class="form-group" style="display:none;">
+			<input class="form-control" type="password" name="confirm-password" id="confirm-password" placeholder="Confirm Password">
+		</div>
+		<div class="form-group">
+			<input class="btn btn-primary" id="submit" style="width:100%;" type="submit" value="Submit">
+		</div>
+		<div class="container text-center">
+			<a id='register' class="text-center">Create an Account</a>
+		</div>
+		<div class="container text-center" style="margin-top:15px">
+			<a id='help' class="text-center">Forgot Password</a>
+		</div>
+
+	</div>
+
 	<!--</form>-->
 	
 </body>

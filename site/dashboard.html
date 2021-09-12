@@ -1,86 +1,270 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="utf-8"/>
-		<link type="text/css" rel="stylesheet" href="style/main.css">
+		<meta charset="utf-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1'>
+		<title>Fog Dashboard</title>
+		<!--<link type="text/css" rel="stylesheet" href="style/main.css">-->
+		<!--<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css' rel='stylesheet'>-->
+		<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">-->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+                <link href='https://use.fontawesome.com/releases/v5.7.2/css/all.css' rel='stylesheet'>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 		<style>
-			body {
-				display: block;
-				width: 100%;
-				height: 100%;
+			.add-new-btn{
+				float:right;
+				margin-left:10px;
+				margin-right:10px;
+				display:none;
 			}
-			table{
-				float: left;
-				width: 50%;
-			}
-			table, th, td {
-				border: 1px solid black;
-				border-collapse: collapse;
-				
-			}
-			.table-container {
-				float: left;
-				display: block;
-				clear: both;
-			}
-			.clear {
-				clear: both;
-				width: 0px;
-				height: 0px;
-				visibility: hidden;
-				overflow: hidden;
-			}
-			div{
-				margin-bottom: 30px;
+			.show{
+				display:block;
 			}
 		</style>
 		<script>
 			$(document).ready(function(){
-				//TODO
-				//query db
-				//get services, devices, user info
+				//hide all tables
+				$('.tab-table').hide();
+				//show active tab table
+				let tableId = $('.nav-tabs li').find('.active').parent().attr('data-table');
+				console.log(tableId);
+				$(tableId).show();
+
+				$('.nav-tabs li').on('click', function(){
+					//remove active from all set on clicked
+					$('.nav-tabs li').find('.active').removeClass('active');
+					//set clicked tab active
+					$(this).find('a').addClass('active');
+
+					//make corresponding table visible
+					$('.tab-table').hide();
+					$($(this).attr('data-table')).show();
+					
+					//make corresponding button visible
+					$('#add-btns button').removeClass('show');
+					console.log($(this).attr('data-button'));
+					$($(this).attr('data-button')).addClass('show');
+				});
+
+				//control buttons
+					//need to link to create buttons in modals
+				$('.modal').find('button.btn-success').on('click', function(){
+					console.log('clicked modal button');
+
+					//figure out which modal
+					/*if($(this).attr('id') === "new-device"){
+						newDevice();
+					}
+					else if($(this).attr('id') === "new-service"){
+						newService();
+					}*/
+
+					//ajax the form
+				});
+				
+
+				//fetch table data
+					//fill "*-table-rows" content
+
+				//handle actions
+				$('.dropdown-item edit').on('click', function(){
+					console.log('Edit');
+					//get item id or something, make ajax request after user fills out form
+				});
+
+				$('.dropdown-item[name="delete"]').on('click', function(){
+					let itemName = $(this).parent().parent().parent().parent().find('td[name="name"]').text();
+					$('#delete-item-name').text(itemName);
+
+					//set button to call ajax function with parameters to delete
+				});
+
+				function newDevice(){
+
+				}
+
+				function newService(){
+
+				}
+
+				//$.ajax(
+
+				function addTableRow(tableId, data){
+					let pathParts = window.location.pathname.split('/');
+					return pathParts[pathParts.length-1];
+				}
+
+				function getUserId(){
+					
+				}
+
+				//load table data
+				var userId = getUserId();
+				console.log(userId);
+				$.get('/dashboard-data/'+userId, function(json){
+					console.log(json);
+					//get devices
+					//get services
+				});
 			});
 		</script>
 	</head>
 	<body>
-		<!--TODO select dropdown to sort by device for service, ssh key table-->
-		<div style="height:100%; width:15%; float:left;">
-			Sidebar
+		<div class="row">
+			<div class="col">
+				<ul class="nav nav-tabs">
+					  <li data-button="#new-device" data-table="#device-table-view" class="nav-item" ><a class="nav-link active" href="#">Devices</a></li>
+					  <li data-button="#new-service" data-table="#service-table-view" class="nav-item" ><a class="nav-link" href="#">Services</a></li>
+
+				</ul>
+			</div>
+			<div id="add-btns" class="col">
+				<button id="new-device" class="btn btn-success add-new-btn show" data-toggle="modal" data-target="#new-device-modal">New Device</button>
+				<button id="new-service" class="btn btn-success add-new-btn" data-toggle="modal" data-target="#new-service-modal">New Service</button>
+			</div>
 		</div>
-		<div>
-			<table id="services">
-				<tr>
-					<th>Service Name</th>
-					<th>Protocol</th>
-					<th>Path</th>
-					<th>Port</th>
-					<th>Status</th><!--get this from the client-->
-				</tr>
-				<!--add more rows here for each service-->
+		<div id="device-table-view" class="tab-table">
+			<table class="table table-dark table-striped">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Device Name</th>
+						<th>Client Software Version</th>
+						<th># of Services</th>
+						<th>Status</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody id="device-table-rows">
+				<!--
+					<tr>
+						<td name="name" >Desktop</td>
+						<td name="device-name" >kyle@kyle-desktop</td>
+						<td name="client-software-version" >0.0.0</td>
+						<td name="#-of-services" >0</td>
+						<td name="status" >Inactive</td>
+						<td>
+							<div class="dropdown">
+								<button class="btn btn-secondary dropdown-toggle" id="dropdwonMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span class="fas fa-ellipsis-h"></span>
+								</button>
+								<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+									<a class="dropdown-item" name="edit" href="#">Edit</a>
+									<a class="dropdown-item" name="connect" href="#">Connect</a>
+									<a class="dropdown-item" name="delete" data-toggle="modal" data-target="#delete-item-modal" href="#">Delete</a>
+								</div>
+							</div>
+						</td>
+					</tr>
+				-->
+				</tbody>
 			</table>
 		</div>
-		<div class="clear"></div>
-		<div>
-			<table id="devices">
-				<tr>
-					<th>Name</th>
-					<th>Device Name</th>
-					<th>Client Software Version</th>
-					<th># of Services</th>
-				</tr>
+		<div id="service-table-view" class="tab-table">
+			<table class="table table-dark table-striped">
+				<thead>
+					<tr>
+						<th>Service Name</th>
+						<th>Device</th>
+						<th>Protocol</th>
+						<th>Path</th>
+						<th>Port</th>
+						<th>Status</th><!--get this from the client-->
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+				<!--
+					<tr>
+						<td name="name" >Terraprint</td>
+						<td name="device-name" >Desktop</td>
+						<td name="protocol" >http</td>
+						<td name="path" >/</td>
+						<td name="port" >8000</td>
+						<td name="status" >Inactive</td>
+						<td>
+							<div class="dropdown">
+								<button class="btn btn-secondary dropdown-toggle" id="dropdwonMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span class="fas fa-ellipsis-h"></span>
+								</button>
+								<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+									<a class="dropdown-item" name="edit" href="#">Edit</a>
+									<a class="dropdown-item" name="connect" href="#">Connect</a>
+									<a class="dropdown-item" name="share" href="#">Share</a>
+									<a class="dropdown-item" name="delete" data-toggle="modal" data-target="#delete-item-modal" href="#">Delete</a>
+								</div>
+							</div>
+						</td>
+					</tr>
+				-->
+				</tbody>
 			</table>
 		</div>
-		<div class="clear"></div>
-		<div>
-			<table id="ssh-keys">
-				<tr>
-					<th>Associated Device</th>
-					<th>Value</th>
-					<th>Last Used</th>
-				</tr>
-			</table>
+		<!--modals-->
+		<div class="modal" id="new-device-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Add New Device</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<input id="new-device-name" class="form-control" placeholder="Service Name"/>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+						<button id="create-new-device"type="button" class="btn btn-success" data-dismiss="modal">Create</button>
+					</div>
+				</div>
+			</div>
 		</div>
-		<div class="clear"></div>
+		
+		<div class="modal" id="new-service-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Add New Device</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<input id="new-service-name" class="form-control" placeholder="Service Name"/>
+						</div>
+						<div class="form-group">
+							<input id="new-service-protocol" class="form-control" placeholder="Service Protocol"/>
+						</div>
+						<div class="form-group">
+							<input id="new-service-port" class="form-control" placeholder="Service Port"/>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+						<button id="create-new-service" type="button" class="btn btn-success" data-dismiss="modal">Create</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal" id="delete-item-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-header">
+							Delete&nbsp;<span id="delete-item-name"></span> ?
+						</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">Yes</button>
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--TODO actions toggles for list items to delete, edit, etc-->
 	</body>
 </html>
