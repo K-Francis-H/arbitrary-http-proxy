@@ -42,6 +42,7 @@ function findMatch(url){
 	return false;
 }
 //TODO switch back to basic http lib, parse cookies manually, its easier than reconfiguring express
+/*
 const app = express();
 app.use(cookieParser());
 
@@ -109,7 +110,7 @@ const httpServer = http.createServer(app);
 httpServer.listen(9800); 
 
 
-
+*/
 
 /*
 let routingServer = http.createServer( (ext_req, ext_res) => {
@@ -185,5 +186,109 @@ let routingServer = http.createServer( (ext_req, ext_res) => {
 
 //});
 
-//routingServer.listen(9800);
+function parseCookies (request) {
+    var list = {},
+        rc = request.headers.cookie;
+
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+
+    return list;
+}
+
+function setCookie(res, cookies){
+	res.setHeader('Set-Cookie', cookies);
+}
+
+let proxyServer = http.createServer( (inReq, inRes) => {
+	//get cookies
+
+	let cookies = parseCookies(inReq);
+	console.log(cookies);
+
+	if(cookies.serviceId && cookies.token){
+		proxyRoute(inReq, inRes);
+		return;
+	}else{
+		//check the url
+		let parts = inReq.split('/');
+		let serviceId, token;
+		if(parts[0] && isUUIDv4(parts[0])){
+			serviceId = parts[0];
+			
+		}
+		if(parts[1] && isUUIDv4(parts[1])){
+			token = parts[1];
+		}
+		if(serviceId && token && proxyMap[serviceId] && proxyMap[serviceId].token == token){
+			setCookie(inRes, ['serviceId='+serviceId, 'token='+token]);
+			inRes.writeHead(302, {
+				location : '/'
+			});
+			inRes.end();
+			return;
+		}else{
+			//just let it ride on to the 403 forbidden call
+		}
+		
+	}
+
+	inRes.writeHead(403);
+	inRes.write('Forbidden');
+	inRes.end();
+
+	//check for cookies
+		//if cookies
+			//and the specific cookies we need
+				//route user to service via proxy
+
+	//else
+		//check for url params
+			//set cookies if params exist
+
+	//otherwise
+		//exit 403
+});
+
+function proxyRoute(inReq, inRes){
+	let cookies = parseCookies(inReq);
+	let serviceId = cookies.serviceId;
+	let token = cookies.token;
+	
+	if(proxyMap[serviceId] && proxyMap[serviceId].token == token){
+		let prx = proxyMap[serviceId];
+		//let path = ext_req.url.replace(
+		let opt = {
+			hostname : prx.host,//httpMap[serviceId][host],
+			port : prx.port,//httpMap[serviceId][port],
+			method : inReq.method,
+			headers : inReq.headers,
+			path : inReq.url 
+		}
+
+		var proxy = http.request(opt, function(res){
+			//pipe shit back to the real client, maybe rewrite links fuck
+			//TODO
+
+			//pipe the incoming response to the original requestor
+			inRes.writeHead(res.statusCode, res.headers);
+			res.pipe(inRes, {
+				end: true
+			});
+		});
+
+		//pipe the body of the incoming request into the proxy outgoing request
+		inReq.pipe(proxy, {
+			end: true
+		});
+	}
+}
+
+function isUUIDv4(str){
+	return str && str.match(/^([0-9]|[a-f]){8}\-([0-9]|[a-f]){4}\-4([0-9]|[a-f]){3}\-[8,9,a,b]([0-9]|[a-f]){3}\-([0-9]|[a-f]){12}$/i) !== null;
+}
+
+proxyServer.listen(9800);
 
