@@ -42,7 +42,7 @@ function findMatch(url){
 	return false;
 }
 //TODO switch back to basic http lib, parse cookies manually, its easier than reconfiguring express
-/*
+
 const app = express();
 app.use(cookieParser());
 
@@ -206,28 +206,34 @@ let proxyServer = http.createServer( (inReq, inRes) => {
 	//get cookies
 
 	let cookies = parseCookies(inReq);
+	console.log(inReq.url);
 	console.log(cookies);
 
 	if(cookies.serviceId && cookies.token){
+		console.log('proxying');
 		proxyRoute(inReq, inRes);
 		return;
 	}else{
+		console.log('checking path');
 		//check the url
-		let parts = inReq.split('/');
+		let parts = inReq.url.split('/');
 		let serviceId, token;
-		if(parts[0] && isUUIDv4(parts[0])){
-			serviceId = parts[0];
+		console.log(parts);
+		if(parts[1] /*&& isUUIDv4(parts[1])*/){
+			serviceId = parts[1];
 			
 		}
-		if(parts[1] && isUUIDv4(parts[1])){
-			token = parts[1];
+		if(parts[2] /*&& isUUIDv4(parts[2])*/){
+			token = parts[2];
 		}
 		if(serviceId && token && proxyMap[serviceId] && proxyMap[serviceId].token == token){
 			setCookie(inRes, ['serviceId='+serviceId, 'token='+token]);
-			inRes.writeHead(302, {
-				location : '/'
-			});
-			inRes.end();
+			//console.log(res.headers);
+			//inRes.writeHead(302, {
+			//	location : '/'
+			//});
+			//inRes.end();
+			proxyRoute(inReq, inRes, '/');
 			return;
 		}else{
 			//just let it ride on to the 403 forbidden call
@@ -252,21 +258,26 @@ let proxyServer = http.createServer( (inReq, inRes) => {
 		//exit 403
 });
 
-function proxyRoute(inReq, inRes){
+function proxyRoute(inReq, inRes, path){
 	let cookies = parseCookies(inReq);
 	let serviceId = cookies.serviceId;
 	let token = cookies.token;
+	let url = path || inReq.url;
 	
 	if(proxyMap[serviceId] && proxyMap[serviceId].token == token){
 		let prx = proxyMap[serviceId];
 		//let path = ext_req.url.replace(
+		//inReq.setHeader('Cookie', ['serviceId='+serviceId, 'token='+token]);
+		let headers = JSON.parse(JSON.stringify(inReq.headers));
+		headers
 		let opt = {
 			hostname : prx.host,//httpMap[serviceId][host],
 			port : prx.port,//httpMap[serviceId][port],
 			method : inReq.method,
 			headers : inReq.headers,
-			path : inReq.url 
+			path : path
 		}
+		
 
 		var proxy = http.request(opt, function(res){
 			//pipe shit back to the real client, maybe rewrite links fuck
