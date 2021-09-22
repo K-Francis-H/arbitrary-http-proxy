@@ -110,9 +110,9 @@ const httpServer = http.createServer(app);
 httpServer.listen(9800); 
 
 
-*/
 
-/*
+
+
 let routingServer = http.createServer( (ext_req, ext_res) => {
 	console.log(ext_req.url);
 	let route = findMatch(ext_req.url);

@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const mime = require('mime');
 
 const proxyMap = {
-	// /08173b7d-5b5e-4882-82f9-7ec7243299a8/7e5d6bba-2d5f-498f-99bf-7efd656351b6
+	// /start-service/08173b7d-5b5e-4882-82f9-7ec7243299a8/7e5d6bba-2d5f-498f-99bf-7efd656351b6
 	// Or4nG3fir3
 	'08173b7d-5b5e-4882-82f9-7ec7243299a8' : {
 		token : '7e5d6bba-2d5f-498f-99bf-7efd656351b6',
@@ -37,12 +37,32 @@ app.use(express.urlencoded({ extended : true }));
 //app.use(cookieParser());
 app.use(sessions({
 	secret : 'Secret TODO',//uuid.v4(),
-	saveUninitialized : true,
-	cookie : { maxAge : 1000 * 10 },
-	resave : true
+	saveUninitialized : false,
+	cookie : { maxAge : 1000 * 10, httpOnly: true },
+	resave : false
 }));
 
-app.use( (req, res, next) => {
+app.get('/start-service/:serviceId/:token', (req, res, next) => {
+	console.log('candidate initializer');
+	let serviceId = req.params.serviceId;
+	let token = req.params.token;
+	console.log(req.params);
+	console.log(serviceId);
+	console.log(token);
+
+	if(isUUIDv4(serviceId) && proxyMap[serviceId]){
+		console.log('adding session');
+		//check token too in the future
+		req.session.serviceId = serviceId;
+		req.session.token = token;
+		res.redirect('/');
+	}else{
+		//res.sendStatus(404);
+		next();
+	}
+});
+
+app.use('*', (req, res, next) => {
 	if(!req.session){
 		console.log('no session');
 		next();
@@ -55,22 +75,6 @@ app.use( (req, res, next) => {
 		}else{
 			next();//res.sendStatus(403);
 		}
-	}
-});
-
-app.get('/:serviceId/:token', (req, res) => {
-	console.log('candidate initializer');
-	let serviceId = req.params.serviceId;
-	let token = req.params.token;
-
-	if(isUUIDv4(serviceId) && proxyMap[serviceId]){
-		console.log('adding session');
-		//check token too in the future
-		req.session.serviceId = serviceId;
-		req.session.token = token;
-		res.redirect('/');
-	}else{
-		res.sendStatus(404);
 	}
 });
 
@@ -90,6 +94,7 @@ function proxy(req, res){
 		};
 
 		let proxy = http.request(opt, function(proxy_res){
+			console.log(proxy_res.headers);
 			//res.writeHead(proxy_res.statusCode, proxy_res.headers);
 			proxy_res.pipe(res, {end: true});
 		});
